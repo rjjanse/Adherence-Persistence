@@ -5,8 +5,18 @@ How to determine adherence and persistence to a certain drug, while taking into 
 The code creates two functions:
 
 ```
-adh(drug, drug_df, yr)
-per(drug, drug_df, yr, gp)
+adh(df, drug_df, yr)
+per(df, drug_df, yr, gp)
 ```
 
-In these functions, you can specify your drug of interest, the dataframe from which they should be pulled, the amount of years you are interested in for follow-up, and for persistence the grace period you decided on. Note that the code is data-specific, but variable names can easily be changed to your own data.
+In these functions, you can specify your drug of interest, the dataframe from which they should be pulled, the amount of years you are interested in for follow-up, and for persistence the grace period you decided on. Note that the code is data-specific, but variable names can easily be changed to your own variable names.
+
+### Example
+Imagine I am interested in the adherence and persistence to angiotensin-converting-enzyme inhibitors (ACEis) after initiation. I have prepared a dataframe _cohort_ with my cohort of ACEi new-users and I have prepared a dataframe _drugs_ with all dispensations for ACEis. Then, to determine the adherence and persistence (with a grace period of 30 days) in the first 12 months, I can simply run the following code:
+
+```
+adh_acei <- adh(cohort, drugs, 1)
+per_acei <- adh(cohort, drugs, 1, 30)
+
+adhper <- adh_acei %>% dplyr::left_join(per_acei, "id")
+```
