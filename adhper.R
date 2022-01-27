@@ -6,22 +6,19 @@
 pacman::p_load("dplyr", "tidyverse")
 
 ##### Function for adherence #####
-adh <- function(drg, drug_df, yr){
+adh <- function(df, drug_df, yr){
     # Prepare drugs data
-    drugs_df <- filter(sample, drug == drg) %>% mutate(yr = yr,
-                                                       year_dt = as.Date(ifelse(yr == 0, censor_dt_cod, (index_dt + (yr * 365.25))),
-                                                                         origin = "1970-01-01"),
-                                                       year_dt = as.Date(ifelse(year_dt > censor_dt_cod, censor_dt_cod, year_dt),
-                                                                         origin = "1970-01-01")) %>% left_join(drug_df, "lopnr") %>%
-        filter(edatum <= year_dt) %>% dplyr::select(-(drug:year_dt)) %>% arrange(lopnr, edatum)
+    drugs_df <- df %>% mutate(yr = yr,
+                              year_dt = as.Date(ifelse(yr == 0, censor_dt_cod, (index_dt + (yr * 365.25))), origin = "1970-01-01"),
+                              year_dt = as.Date(ifelse(year_dt > censor_dt_cod, censor_dt_cod, year_dt), origin = "1970-01-01")) %>% 
+        left_join(drug_df, "lopnr") %>% filter(edatum >= index_dt & edatum <= year_dt) %>% dplyr::select(-(drug:year_dt)) %>% 
+        arrange(lopnr, edatum)
     
     # Prepare data for the loop
-    adh_drug <- filter(sample, drug == drg) %>% mutate(yr = yr,
-                                                       year_dt = as.Date(ifelse(yr == 0, censor_dt_cod, (index_dt + (yr * 365.25))),
-                                                                         origin = "1970-01-01"),
-                                                       year_dt = as.Date(ifelse(year_dt > censor_dt_cod, censor_dt_cod, year_dt),
-                                                                         origin = "1970-01-01"),
-                                                       totday = as.numeric(year_dt - index_dt)) %>% left_join(drugs_df, "lopnr") %>%
+    adh_drug <- df %>% mutate(yr = yr,
+                              year_dt = as.Date(ifelse(yr == 0, censor_dt_cod, (index_dt + (yr * 365.25))), origin = "1970-01-01"),
+                              year_dt = as.Date(ifelse(year_dt > censor_dt_cod, censor_dt_cod, year_dt), origin = "1970-01-01"),
+                              totday = as.numeric(year_dt - index_dt)) %>% left_join(drugs_df, "lopnr") %>%
         mutate(days = ifelse(drug == "glp1", (antal * dur), (antal * antnum)), 
                end_dt = as.Date(edatum + days),
                # Days without pills
@@ -66,26 +63,23 @@ adh <- function(drg, drug_df, yr){
 
 
 ##### Function for persistence #####
-per <- function(drg, drug_df, yr, gp){
+per <- function(df, drug_df, yr, gp){
     # To get persistence (60 day gap)
     # First determine when a prescription ends
     # Then calculate the gap between each end date and subsequent start date
-    drugs_df <- filter(sample, drug == drg) %>% mutate(yr = yr,
-                                                       year_dt = as.Date(ifelse(yr == 0, censor_dt_cod, (index_dt + (yr * 365.25))),
-                                                                         origin = "1970-01-01"),
-                                                       year_dt = as.Date(ifelse(year_dt > censor_dt_cod, censor_dt_cod, year_dt),
-                                                                         origin = "1970-01-01")) %>% left_join(drug_df, "lopnr") %>%
-        filter(edatum <= year_dt) %>% dplyr::select(-(drug:year_dt)) %>% arrange(lopnr, edatum)
+    drugs_df <- df %>% mutate(yr = yr,
+                              year_dt = as.Date(ifelse(yr == 0, censor_dt_cod, (index_dt + (yr * 365.25))), origin = "1970-01-01"),
+                              year_dt = as.Date(ifelse(year_dt > censor_dt_cod, censor_dt_cod, year_dt), origin = "1970-01-01")) %>% 
+        left_join(drug_df, "lopnr") %>% filter(edatum >= index_dt & edatum <= year_dt) %>% dplyr::select(-(drug:year_dt)) %>% 
+        arrange(lopnr, edatum)
     
-    per_drug <- filter(sample, drug == drg) %>% mutate(yr = yr,
-                                                       year_dt = as.Date(ifelse(yr == 0, censor_dt_cod, (index_dt + (yr * 365.25))),
-                                                                         origin = "1970-01-01"),
-                                                       year_dt = as.Date(ifelse(year_dt > censor_dt_cod, censor_dt_cod, year_dt),
-                                                                         origin = "1970-01-01")) %>% left_join(drugs_df, "lopnr") %>%
+    per_drug <- df %>% mutate(yr = yr,
+                              year_dt = as.Date(ifelse(yr == 0, censor_dt_cod, (index_dt + (yr * 365.25))), origin = "1970-01-01"),
+                              year_dt = as.Date(ifelse(year_dt > censor_dt_cod, censor_dt_cod, year_dt), origin = "1970-01-01")) %>% 
+        left_join(drugs_df, "lopnr") %>%
         mutate(days = ifelse(drug == "glp1", (antal * dur), (antal * antnum)),
                end_dt = as.Date(edatum + days)) %>%
         arrange(lopnr, edatum) %>% group_by(lopnr) %>% mutate(rownr = row_number(),
-                                                              nrow = max(rownr),
                                                               out_of_pills_dt = as.Date(ifelse(rownr == 1, end_dt, NA), 
                                                                                         origin = "1970-01-01"),
                                                               gap = NA) %>% ungroup()
