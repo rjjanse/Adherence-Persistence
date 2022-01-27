@@ -20,3 +20,13 @@ per_acei <- adh(cohort, drugs, 1, 30)
 
 adhper <- adh_acei %>% dplyr::left_join(per_acei, "id")
 ```
+
+### Variable names
+The following data-specific variable names are used in the code and mean the following:
+- lopnr           =   participant ID
+- drug            =   drug of interest
+- index_dt        =   participant's cohort entry date
+- censor_dt_cod   =   participant's censor date
+- edatum          =   dispensation date
+- antal           =   amount of packages dispensed
+- antnum          =   amount of units (e.g., pills) per package
