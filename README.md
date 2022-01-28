@@ -1,6 +1,6 @@
 # Determining adherence and persistence
 
-How to determine adherence and persistence to a certain drug, while taking into account stockpiling :pill:? This repository contains [code](Adherence-Persistence/adhper.R) that you can use to easily determine the proportion of days covered and the time until discontinuation, whilst taking into account stockpiling on dispensation-to-dispensation basis. 
+How to determine adherence and persistence to a certain drug, while taking into account stockpiling :pill:? This repository contains [code](./adhper.R) that you can use to easily determine the proportion of days covered and the time until discontinuation, whilst taking into account stockpiling on dispensation-to-dispensation basis. 
 
 The code creates two functions:
 
